@@ -1,0 +1,208 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.donbala.emailManagement.dao.EmailManagementDao">
+
+    <sql id="sqlStart">
+      select t.* from (
+            select v.*,rownum as rn from (
+    </sql>
+    <sql id="sqlEnd">
+            ) v
+            where rownum<![CDATA[ <= ]]>#{pageEnd}) t
+        where t.rn<![CDATA[ > ]]>#{pageStart}
+    </sql>
+
+    <!--验证邮箱是否存在-->
+    <select id="selectEmailInfoCount" parameterType="com.donbala.emailManagement.model.EmailModel" resultType="int">
+        select count(*) from cms_emailmaininfo where email=#{email} and erole=#{eRole}
+    </select>
+    <!--插入邮箱信息-->
+    <insert id="insertEmailInfo" parameterType="com.donbala.emailManagement.model.EmailModel">
+        insert into CMS_EMAILMAININFO (id,email,epassword,ehost,Enickname,Estatus,erole,makedate,Makeuser,Modifydate,Modifyuser)
+        values (#{id},#{email},#{ePassword},#{eHost},#{nickName},#{eStatus},#{eRole},
+            TO_DATE(#{makeDate},'yyyy-mm-dd hh24:mi:ss'),#{makeUser},TO_DATE(#{modifyDate},'yyyy-mm-dd hh24:mi:ss'),#{modifyUser})
+      </insert>
+    <!--查询邮箱信息-->
+    <select id="selectEmailInfo" resultType="com.donbala.emailManagement.model.EmailModel" parameterType="com.donbala.emailManagement.model.EmailModel">
+          select e.id,
+             e.email,
+             e.ePassword,
+             e.eHost,
+             e.enickName nickName,
+             (case e.estatus
+               when '1' then
+                '启用'
+               when '0' then
+                '停用'
+             end) eStatus,
+             (case e.eRole
+               when 'S' then
+                '发件邮箱'
+               when 'T' then
+                '通讯邮箱'
+             end) eRole
+          from cms_emailmaininfo e where e.erole=#{eRole}
+      </select>
+    <!--启/停 用邮箱-->
+    <update id="startOrStopEmail" parameterType="com.donbala.emailManagement.model.EmailModel">
+          update cms_emailmaininfo set estatus=#{eStatus} where id=#{id}
+    </update>
+    <!--删除邮箱-->
+    <delete id="deleteEmail" parameterType="com.donbala.emailManagement.model.EmailModel">
+        delete from cms_emailmaininfo where id=#{id}
+    </delete>
+    <!--回显-->
+    <select id="selectReturnEmailInfo" parameterType="com.donbala.emailManagement.model.EmailModel"
+            resultType="com.donbala.emailManagement.model.EmailModel">
+          select e.id,
+             e.email,
+             e.ePassword,
+             e.eHost,
+             e.enickName nickName,
+             e.eStatus,
+             e.eRole
+          from cms_emailmaininfo e
+          where e.id=#{id}
+    </select>
+    <!--修改邮箱-->
+    <update id="editEmail" parameterType="com.donbala.emailManagement.model.EmailModel">
+        update cms_emailmaininfo set email=#{email},estatus=#{eStatus},erole=#{eRole},ehost=#{eHost},epassword=#{ePassword},enickName=#{nickName},
+         Modifydate=TO_DATE(#{modifyDate},'yyyy-mm-dd hh24:mi:ss'),modifyUser=#{modifyUser}
+         where id=#{id}
+    </update>
+
+    <!--查询每个发送任务的邮箱信息-->
+    <select id="selectEmailInfoByCode" parameterType="com.donbala.emailManagement.model.EmailModel"
+            resultType="com.donbala.emailManagement.model.EmailModel">
+        select m.email,
+               m.ePassword,
+               m.eHost,
+               m.enickname nickName,
+               m.eStatus,
+               a.eRole
+          from cms_emailjobaddress a, cms_emailmaininfo m
+         where a.emailid = m.id
+           and m.estatus = '1'
+           and a.emailjobcode = #{emailJobCode}
+    </select>
+    <!--发送任务表格查询-->
+    <select id="selectEmailJobList" resultType="com.donbala.emailManagement.model.EmailJobModel">
+          select d.emailJobCode,
+                d.emailJobName,
+                (select m.email
+                   from cms_emailjobaddress a, cms_emailmaininfo m
+                  where a.emailid = m.id
+                    and a.emailjobcode = d.emailjobcode
+                    and a.erole = 'S'
+                    and m.estatus = '1') emailSender,
+                 (select wm_concat(m.email)
+                   from cms_emailjobaddress a, cms_emailmaininfo m
+                  where a.emailid = m.id
+                    and a.emailjobcode = d.emailjobcode
+                    and a.erole = 'R'
+                    and m.estatus = '1') emailReceiver,
+                  (select wm_concat(m.email)
+                   from cms_emailjobaddress a, cms_emailmaininfo m
+                  where a.emailid = m.id
+                    and a.emailjobcode = d.emailjobcode
+                    and a.erole = 'C'
+                    and m.estatus = '1') emailCopype
+           from cms_emailjobdef d
+          where exists (select 1
+                   from cms_emailjobaddress a
+                  where a.emailjobcode = d.emailjobcode)
+    </select>
+    <!--发送任务是否存在验证查询-->
+    <select id="selectEmailJobCount" resultType="int" parameterType="com.donbala.emailManagement.model.EmailJobModel">
+        select count(*) from cms_emailjobaddress where emailjobcode=#{emailJobCode}
+    </select>
+    <!--新增发送任务-->
+    <insert id="insertEmailJob" parameterType="list">
+        insert into cms_emailjobaddress(emailjobcode,emailid,erole,makedate,Makeuser,Modifydate,Modifyuser)
+        select a.emailjobcode,a.emailid,a.erole,Sysdate,a.operater,Sysdate,a.operater from (
+        <foreach collection="list" index="index" item="item" separator="UNION ALL">
+            select #{item.emailJobCode} emailjobcode,#{item.emailId} emailid,#{item.eRole} erole,#{item.operater} operater from dual
+        </foreach>) a
+    </insert>
+    <!--删除发送任务-->
+    <delete id="deleteEmailJob" parameterType="com.donbala.emailManagement.model.EmailJobModel" >
+       delete from cms_emailjobaddress where emailjobcode=#{emailJobCode}
+    </delete>
+    <!--发送任务回显-->
+    <select id="emailJobReturnView" parameterType="com.donbala.emailManagement.model.EmailJobModel" resultType="com.donbala.emailManagement.model.EmailJobModel">
+        select d.emailJobCode,
+                d.emailJobName,
+                (select a.emailid
+                   from cms_emailjobaddress a, cms_emailmaininfo m
+                  where a.emailid = m.id
+                    and a.emailjobcode = d.emailjobcode
+                    and a.erole = 'S'
+                    and m.estatus = '1') emailSender,
+                 (select wm_concat(a.emailid)
+                   from cms_emailjobaddress a, cms_emailmaininfo m
+                  where a.emailid = m.id
+                    and a.emailjobcode = d.emailjobcode
+                    and a.erole = 'R'
+                    and m.estatus = '1') emailReceiver,
+                  (select wm_concat(a.emailid)
+                   from cms_emailjobaddress a, cms_emailmaininfo m
+                  where a.emailid = m.id
+                    and a.emailjobcode = d.emailjobcode
+                    and a.erole = 'C'
+                    and m.estatus = '1') emailCopype
+           from cms_emailjobdef d
+          where d.emailjobcode=#{emailJobCode}
+    </select>
+    <!-- 插入邮件日志 -->
+    <insert id="addEmailLog" parameterType="map">
+		INSERT INTO cms_emailsendlog (SERIALNO, SENDER, ADDRESSEE, COPYPERSON, THEME, CONTENT, TYPE, SENDTIME, STATE, ERRMSG, MAKEDATE, MAKEUSER, MODIFYDATE, MODIFYUSER)
+		VALUES (#{serialno}, #{sender}, #{addressee}, #{copyperson}, #{theme}, #{content}, #{type}, Sysdate, #{state}, #{errMsg}, Sysdate, 'system', Sysdate, 'system')
+	</insert>
+    <!--查询邮件日志-->
+    <select id="selectEmailLog" parameterType="com.donbala.emailManagement.model.EmailLogModel" resultType="com.donbala.emailManagement.model.EmailLogModel">
+        <include refid="sqlStart"/>
+        select (select emailjobname from cms_emailjobdef where emailjobcode = s.type) emailJobName,
+                s.theme,
+                s.content,
+                to_char(s.sendtime,'yyyy-mm-dd hh24:mi:ss') sendTime,
+                s.sender emailSender,
+                s.addressee emailReceiver,
+                s.copyperson emailCopype,
+                (case s.state when '1' then '成功' when '0' then '失败' end) sendState,
+                s.errMsg
+        from cms_emailsendlog s
+        where 1=1
+        <if test='emailJobCode != "" and emailJobCode != null'>
+            <![CDATA[AND s.type = #{emailJobCode}]]>
+        </if>
+        <if test='startDate != "" and startDate != null'>
+            <![CDATA[AND TO_DATE(to_char(s.SENDTIME,'yyyy-mm-dd hh24:mi:ss'),'yyyy-mm-dd hh24:mi:ss') >= TO_DATE(#{startDate},'yyyy-mm-dd hh24:mi:ss')]]>
+        </if>
+        <if test='endDate != "" and endDate != null'>
+            <![CDATA[AND TO_DATE(to_char(S.SENDTIME,'yyyy-mm-dd hh24:mi:ss'),'yyyy-mm-dd hh24:mi:ss') <= TO_DATE(#{endDate},'yyyy-mm-dd hh24:mi:ss')]]>
+        </if>
+        <if test='sendState != "" and sendState != null'>
+            <![CDATA[AND S.state = #{sendState}]]>
+        </if>
+
+        order by s.sendtime desc
+        <include refid="sqlEnd"/>
+    </select>
+    <select id="selectEmailLogCount" resultType="int" parameterType="com.donbala.emailManagement.model.EmailLogModel">
+        select count(*)
+        from cms_emailsendlog s
+        where 1=1
+        <if test='emailJobCode != "" and emailJobCode != null'>
+            <![CDATA[AND s.type = #{emailJobCode}]]>
+        </if>
+        <if test='startDate != "" and startDate != null'>
+            <![CDATA[AND TO_DATE(to_char(s.SENDTIME,'yyyy-mm-dd hh24:mi:ss'),'yyyy-mm-dd hh24:mi:ss') >= TO_DATE(#{startDate},'yyyy-mm-dd hh24:mi:ss')]]>
+        </if>
+        <if test='endDate != "" and endDate != null'>
+            <![CDATA[AND TO_DATE(to_char(S.SENDTIME,'yyyy-mm-dd hh24:mi:ss'),'yyyy-mm-dd hh24:mi:ss') <= TO_DATE(#{endDate},'yyyy-mm-dd hh24:mi:ss')]]>
+        </if>
+        <if test='sendState != "" and sendState != null'>
+            <![CDATA[AND S.state = #{sendState}]]>
+        </if>
+    </select>
+</mapper>

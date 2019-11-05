@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.donbala.codeselect.dao.CodeAndNameMapper">
+        <resultMap id="BaseResultMap" type="com.donbala.codeselect.model.CodeAndName">
+            <result column="code" jdbcType="VARCHAR" property="code" />
+            <result column="codename" jdbcType="VARCHAR" property="codename" />
+        </resultMap>
+
+        <!-- 角色下拉 -->
+        <select id="selectRole" resultMap="BaseResultMap">
+              select
+              roleid as code , rolename as codename
+              from cms_role
+        </select>
+        <!-- 查询作业计划执行间隔 -->
+        <select id="selectJobInterval" resultMap="BaseResultMap">
+            select code,codename from cf_codedef where codetype='jobPlan'
+        </select>
+        <!-- 查询作业名称 -->
+        <select id="selectJobCodeAndName" resultMap="BaseResultMap">
+            select jobcode code,jobname codename from cf_jobdef
+        </select>
+        <!-- 查询邮件任务 -->
+        <select id="selectEmailJob" resultMap="BaseResultMap">
+            select emailjobcode code,emailjobname codename from cms_emailjobdef
+        </select>
+        <!-- 查询发件人 -->
+        <select id="selectEmailSender" resultMap="BaseResultMap">
+            select id code,email codename from cms_emailmaininfo where erole='S' and estatus='1'
+        </select>
+        <!-- 查询收件人 -->
+        <select id="selectEmailReceiver" resultMap="BaseResultMap">
+            select id code,email codename from cms_emailmaininfo where erole='T' and estatus='1'
+        </select>
+        <!-- 查询抄送人 -->
+        <select id="selectEmailCopy" resultMap="BaseResultMap">
+            select id code,email codename from cms_emailmaininfo where erole='T' and estatus='1'
+        </select>
+
+
+</mapper>
