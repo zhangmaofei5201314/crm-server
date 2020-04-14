@@ -27,4 +27,6 @@ public interface CmsUserServiceIntf {
      void editUser(CmsUser cmsUser);
 
      void setPassword(CmsUser cmsUser);
+
+     CmsUser getUserByToken(String token);
 }
