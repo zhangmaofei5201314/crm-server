@@ -1,6 +1,8 @@
 package com.donbala.quartzManagement.model;
 
-public class Quartz{
+import com.donbala.Commons.model.BaseResult;
+
+public class Quartz extends BaseResult {
 
 	/**
 	 * 定时任务类

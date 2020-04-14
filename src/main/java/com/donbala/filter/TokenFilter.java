@@ -46,7 +46,7 @@ public class TokenFilter implements Filter {
         String token = httpServletRequest.getParameter("token");
         PrintWriter out = null ;
         JSONObject res = new JSONObject();
-
+        System.out.println("页面的token："+token);
         //如果前台token不为空
         if(token!=null && !token.equals("")) {
             Map<String, Object> tokenCache = (Map<String, Object>) cache.getValue(token);
@@ -69,7 +69,7 @@ public class TokenFilter implements Filter {
                     tokenCache.put(token, sdf.format(currentDate));
                     tokenCache.put("user", userModel);//用户获取不到问题
                     cache.addCache(token, tokenCache);
-                    //
+                    //正常请求
                     filterChain.doFilter(servletRequest, servletResponse);
 
                 } else {

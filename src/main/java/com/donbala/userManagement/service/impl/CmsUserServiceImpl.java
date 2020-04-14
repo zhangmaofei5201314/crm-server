@@ -9,6 +9,7 @@ import com.donbala.roleManagement.model.CmsUserrole;
 import com.donbala.userManagement.dao.CmsUserMapper;
 import com.donbala.userManagement.model.CmsUser;
 import com.donbala.userManagement.service.CmsUserServiceIntf;
+import com.donbala.util.CacheManager;
 import com.donbala.util.DateUtil;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -29,6 +30,8 @@ public class CmsUserServiceImpl implements CmsUserServiceIntf {
     private CmsMenuMapper cmsMenuMapper;
     @Autowired
     private CmsUserroleMapper cmsUserroleMapper;
+    @Autowired
+    private CacheManager cache;
 
 
     @Override
@@ -133,5 +136,21 @@ public class CmsUserServiceImpl implements CmsUserServiceIntf {
     @Transactional
     public void setPassword(CmsUser cmsUser) {
         cmsUserMapper.updateByPrimaryKeySelective(cmsUser);
+    }
+
+    /**
+     * 根据token获取用户对象信息
+     *  {\_/}
+     * ( ^.^ )
+     *  / > @ zhangmaofei
+     * @date 2020/4/14 15:07
+     * @param token 1
+     * @return com.donbala.userManagement.model.CmsUser
+     */
+    @Override
+    public CmsUser getUserByToken(String token) {
+        Map<String, Object> tokenMap = (Map<String, Object>) cache.getValue(token);
+        CmsUser cmsUser = (CmsUser) tokenMap.get("user");
+        return cmsUser;
     }
 }

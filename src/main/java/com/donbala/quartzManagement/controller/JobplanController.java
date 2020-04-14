@@ -5,6 +5,7 @@ import com.donbala.loginManagement.controller.LoginController;
 import com.donbala.quartzManagement.model.Quartz;
 import com.donbala.quartzManagement.service.QuartzServiceIntf;
 import com.donbala.userManagement.model.CmsUser;
+import com.donbala.userManagement.service.CmsUserServiceIntf;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
@@ -27,6 +28,8 @@ public class JobplanController {
 
     @Autowired
     private QuartzServiceIntf quartzServiceIntf;
+    @Autowired
+    private CmsUserServiceIntf cmsUserServiceIntf;
 
     @GetMapping("/controller/queryjobplanlist")
     public List<Quartz> getJobPlanList() {
@@ -59,7 +62,9 @@ public class JobplanController {
      */
     @RequestMapping(value="/controller/quartz/management/insertJob",method= RequestMethod.POST)
     public Map<String, Object> insertJobPlan(Quartz quartz, HttpSession session){
-        String user=((CmsUser) session.getAttribute("user")).getUsercode();
+//        String user=((CmsUser) session.getAttribute("user")).getUsercode();
+        CmsUser userByToken = cmsUserServiceIntf.getUserByToken(quartz.getToken());
+        String user = userByToken.getName();
         quartz.setMakeUser(user);
         quartz.setModifyUser(user);
         Map<String, Object> map=quartzServiceIntf.insertJobAndParam(quartz);
@@ -78,7 +83,9 @@ public class JobplanController {
     @RequestMapping(value="/controller/quartz/management/startJob",method= RequestMethod.POST)
     public Map<String, Object> startJobPlan(Quartz quartz, HttpSession session){
         System.out.println("进来");
-        String user=((CmsUser) session.getAttribute("user")).getUsercode();
+//        String user=((CmsUser) session.getAttribute("user")).getUsercode();
+        CmsUser userByToken = cmsUserServiceIntf.getUserByToken(quartz.getToken());
+        String user = userByToken.getName();
         quartz.setMakeUser(user);
         quartz.setModifyUser(user);
         Map<String, Object> map=quartzServiceIntf.startJob(quartz);
@@ -97,7 +104,9 @@ public class JobplanController {
     @RequestMapping(value="/controller/quartz/management/stopJob",method= RequestMethod.POST)
     public Map<String, Object> stopJobPlan(Quartz quartz, HttpSession session){
         System.out.println("进来");
-        String user=((CmsUser) session.getAttribute("user")).getUsercode();
+//        String user=((CmsUser) session.getAttribute("user")).getUsercode();
+        CmsUser userByToken = cmsUserServiceIntf.getUserByToken(quartz.getToken());
+        String user = userByToken.getName();
         quartz.setMakeUser(user);
         quartz.setModifyUser(user);
         Map<String, Object> map=quartzServiceIntf.stopJob(quartz);
@@ -116,7 +125,9 @@ public class JobplanController {
     @RequestMapping(value="/controller/quartz/management/deleteJob",method= RequestMethod.POST)
     public Map<String, Object> deleteJobPlan(Quartz quartz, HttpSession session){
         System.out.println("进来");
-        String user=((CmsUser) session.getAttribute("user")).getUsercode();
+//        String user=((CmsUser) session.getAttribute("user")).getUsercode();
+        CmsUser userByToken = cmsUserServiceIntf.getUserByToken(quartz.getToken());
+        String user = userByToken.getName();
         quartz.setMakeUser(user);
         quartz.setModifyUser(user);
         Map<String, Object> map=quartzServiceIntf.removeJob(quartz);
@@ -148,7 +159,9 @@ public class JobplanController {
     @RequestMapping(value="/controller/quartz/management/editJobPlan",method= RequestMethod.POST)
     public Map<String, Object> editJobPlan(Quartz quartz, HttpSession session){
         System.out.println("修改");
-        String user=((CmsUser) session.getAttribute("user")).getUsercode();
+//        String user=((CmsUser) session.getAttribute("user")).getUsercode();
+        CmsUser userByToken = cmsUserServiceIntf.getUserByToken(quartz.getToken());
+        String user = userByToken.getName();
         quartz.setMakeUser(user);
         quartz.setModifyUser(user);
         Map<String, Object> map=quartzServiceIntf.updateJobPlanAndParam(quartz);
