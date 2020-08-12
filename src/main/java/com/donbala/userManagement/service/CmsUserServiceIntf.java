@@ -29,4 +29,6 @@ public interface CmsUserServiceIntf {
      void setPassword(CmsUser cmsUser);
 
      CmsUser getUserByToken(String token);
+
+     List<Map<String, Object>> getAntdUserMenuByCode(String usercode);
 }

@@ -1,9 +1,11 @@
 package com.donbala.roleManagement.model;
 
 
+import com.donbala.Commons.model.BaseResult;
+
 import java.util.List;
 
-public class CmsRole {
+public class CmsRole extends BaseResult {
     private String roleid;
 
     private String rolename;
@@ -16,9 +18,19 @@ public class CmsRole {
 
     private String modifyuser;
 
+    private String menuString;
+
     private List<String> menus;
 
     private String operatetype;
+
+    public String getMenuString() {
+        return menuString;
+    }
+
+    public void setMenuString(String menuString) {
+        this.menuString = menuString;
+    }
 
     public String getOperatetype() {
         return operatetype;

@@ -4,6 +4,7 @@
   <resultMap id="BaseResultMap" type="com.donbala.menuManagement.model.CmsMenu">
     <id column="MENUID" jdbcType="VARCHAR" property="menuid" />
     <result column="MENUNAME" jdbcType="VARCHAR" property="menuname" />
+    <result column="MENUCODE" jdbcType="VARCHAR" property="menucode" />
     <result column="PARENTMENUID" jdbcType="VARCHAR" property="parentmenuid" />
     <result column="MENULINK" jdbcType="VARCHAR" property="menulink" />
     <result column="STATUS" jdbcType="VARCHAR" property="status" />
@@ -36,6 +37,27 @@
     from cms_menu
     where MENUID in (SELECT MENUID from cms_rolemenu rm where rm.roleid in (select roleid
     from cms_userrole ur where ur.usercode = #{usercode} ) )order by nodeorder
+  </select>
+  <!--antd的菜单查询-->
+  <select id="selectMenuByUsercode" parameterType="java.lang.String" resultMap="BaseResultMap">
+    select MENUID,
+           MENUCODE,
+           MENUNAME,
+           PARENTMENUID,
+           MENULINK,
+           STATUS,
+           NODEORDER,
+           MAKEDATE,
+           MAKEUSER,
+           MODIFYDATE,
+           MODIFYUSER
+      from ANTD_MENU
+     where MENUID in
+           (SELECT MENUID
+              from cms_rolemenu rm
+             where rm.roleid in
+                   (select roleid from cms_userrole ur where ur.usercode = #{usercode}))
+     order by nodeorder
   </select>
 
 

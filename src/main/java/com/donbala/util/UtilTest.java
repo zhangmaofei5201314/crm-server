@@ -4,6 +4,7 @@ import com.donbala.constants.TestEnum;
 
 import java.util.List;
 import java.util.Map;
+import java.util.UUID;
 
 /**
  * {\_/}
@@ -23,6 +24,7 @@ public class UtilTest {
             System.out.println(map.get("code")+":"+map.get("desc"));
         }
 
+        System.out.println(UUID.randomUUID().toString().replace("-",""));
 
 
 

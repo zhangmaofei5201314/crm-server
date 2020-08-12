@@ -4,7 +4,7 @@ import ch.qos.logback.classic.Logger;
 import com.donbala.menuManagement.model.CmsRolemenu;
 import com.donbala.roleManagement.model.CmsRole;
 import com.donbala.roleManagement.service.CmsRoleServiceIntf;
-import com.donbala.userManagement.model.CmsUser;
+import com.donbala.userManagement.service.CmsUserServiceIntf;
 import com.donbala.util.DateUtil;
 import com.donbala.util.MessageNotice;
 import org.slf4j.LoggerFactory;
@@ -12,11 +12,10 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.ResponseBody;
 
-import javax.servlet.http.HttpSession;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 /**
@@ -32,6 +31,8 @@ public class RoleController {
 
     @Autowired
     private CmsRoleServiceIntf cmsRoleService ;
+    @Autowired
+    private CmsUserServiceIntf cmsUserServiceIntf;
 
     /**
     *@description: 查询角色的列表
@@ -49,14 +50,18 @@ public class RoleController {
     */
     @PostMapping("/controller/saverole")
     @ResponseBody
-    public MessageNotice saveRole(@RequestBody CmsRole cmsRole, HttpSession session) {
+    public MessageNotice saveRole(/*@RequestBody */ CmsRole cmsRole) {
 
         MessageNotice messageNotice = new MessageNotice();
 
         String operatetype = cmsRole.getOperatetype();
         String sysdate = DateUtil.getSysDate();
-        String usercode = ((CmsUser) session.getAttribute("user")).getUsercode();
+//        String usercode = ((CmsUser) session.getAttribute("user")).getUsercode();
+        String usercode = cmsUserServiceIntf.getUserByToken(cmsRole.getToken()).getUsercode();
+
         CmsRole role= cmsRoleService.getRoleByid(cmsRole.getRoleid());
+        List<String> menus = Arrays.asList(cmsRole.getMenuString().split(","));
+        cmsRole.setMenus(menus);
 
         if(operatetype.equals("insert"))
         {

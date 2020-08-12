@@ -7,6 +7,8 @@ public class CmsMenu {
 
     private String menuname;
 
+    private String menucode;
+
     private String parentmenuid;
 
     private String menulink;
@@ -22,6 +24,14 @@ public class CmsMenu {
     private Date modifydate;
 
     private String modifyuser;
+
+    public String getMenucode() {
+        return menucode;
+    }
+
+    public void setMenucode(String menucode) {
+        this.menucode = menucode;
+    }
 
     public String getMenuid() {
         return menuid;
