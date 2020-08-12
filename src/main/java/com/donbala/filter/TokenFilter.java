@@ -27,6 +27,8 @@ import java.util.Map;
 public class TokenFilter implements Filter {
     @Autowired
     private CacheManager cache;
+//    @Autowired
+//    private MyRequestWrapper myRequestWrapper;
 
     @Override
     public void init(FilterConfig filterConfig) throws ServletException {
@@ -34,6 +36,7 @@ public class TokenFilter implements Filter {
     }
 
     @Override
+//    @ResponseBody
     public void doFilter(ServletRequest servletRequest, ServletResponse servletResponse, FilterChain filterChain) throws IOException, ServletException {
         HttpServletRequest httpServletRequest = (HttpServletRequest)servletRequest;
         HttpServletResponse httpServletResponse = (HttpServletResponse) servletResponse;
@@ -43,7 +46,17 @@ public class TokenFilter implements Filter {
         //当前时间
         Date currentDate = new Date();
         //根据传过来的token验证
-        String token = httpServletRequest.getParameter("token");
+//        String token = httpServletRequest.getParameter("token"); //HttpServletRequest
+//        HttpServletRequestWrapper httpServletRequestWrapper = (HttpServletRequestWrapper) httpServletRequest;
+//        String token = httpServletRequestWrapper.getRequest().getParameter("token");
+        MyRequestWrapper myRequestWrapper = new MyRequestWrapper(httpServletRequest);
+        String paramsJson = myRequestWrapper.getBody();
+        System.out.println("拦截到的报文："+paramsJson);
+        String token = "";
+        if(!("".equals(paramsJson)||paramsJson==null)){
+            token = JSONObject.parseObject(paramsJson).getString("token");
+        }
+        myRequestWrapper=null;
         PrintWriter out = null ;
         JSONObject res = new JSONObject();
         System.out.println("页面的token："+token);

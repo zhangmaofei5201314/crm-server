@@ -15,9 +15,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.List;
-import java.util.Map;
-import java.util.UUID;
+import java.util.*;
 
 @Service
 public class CmsUserServiceImpl implements CmsUserServiceIntf {
@@ -33,6 +31,42 @@ public class CmsUserServiceImpl implements CmsUserServiceIntf {
     @Autowired
     private CacheManager cache;
 
+
+    @Override
+    public List<Map<String, Object>> getAntdUserMenuByCode(String usercode){
+        List<CmsMenu> menus = cmsMenuMapper.selectMenuByUsercode(usercode);
+        List<Map<String, Object>> rList = new ArrayList<>();
+        if(!(menus.size()==0)){
+
+            for (CmsMenu cmu:menus) {
+                Map<String, Object> pMap = new HashMap<>();
+                if("0000".equals(cmu.getParentmenuid())){
+                    pMap.put("path", cmu.getMenulink());
+                    pMap.put("name", cmu.getMenucode());
+                    List<Map<String, Object>> ChildMenus = new ArrayList<>();
+                    for (CmsMenu cmuChild:menus) {
+
+                        if(cmuChild.getParentmenuid().equals(cmu.getMenuid())){
+                            Map<String, Object> cMap = new HashMap<>();
+                            cMap.put("path", cmuChild.getMenulink());
+                            cMap.put("name", cmuChild.getMenucode());
+                            ChildMenus.add(cMap);
+                        }
+
+                    }
+                    pMap.put("children", ChildMenus);
+                    rList.add(pMap);
+                }
+
+            }
+        }else {
+            rList = new ArrayList<>();
+        }
+
+
+
+        return rList;
+    }
 
     @Override
     public CmsUser getUserByUsercode(Map<String,String> usermap) {
@@ -77,6 +111,8 @@ public class CmsUserServiceImpl implements CmsUserServiceIntf {
         List<CmsMenu> menus = cmsMenuMapper.selectByUsercode(usercode);
         return  menus;
     }
+
+
 
     /**
      *@description: 查询所有的菜单，做菜单树

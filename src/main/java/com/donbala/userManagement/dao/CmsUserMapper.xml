@@ -21,7 +21,8 @@
   </resultMap>
   <sql id="Base_Column_List">
     USERCODE, EMAIL, MOBILE, PASSWORD, NAME, GENDOR, BRANCH, DEPARTMENT, STATE, ADMINFLAG, 
-    to_char(PSWEXPIREDATE,'yyyy-mm-dd hh24:mi:ss') PSWEXPIREDATE, to_char(LASTLOGINDATE,'yyyy-mm-dd hh24:mi:ss') LASTLOGINDATE, to_char(MAKEDATE,'yyyy-mm-dd hh24:mi:ss') MAKEDATE, MAKEUSER, to_char(MODIFYDATE,'yyyy-mm-dd hh24:mi:ss') MODIFYDATE, MODIFYUSER
+    to_char(PSWEXPIREDATE,'yyyy-mm-dd hh24:mi:ss') PSWEXPIREDATE, to_char(LASTLOGINDATE,'yyyy-mm-dd hh24:mi:ss') LASTLOGINDATE,
+    to_char(MAKEDATE,'yyyy-mm-dd hh24:mi:ss') MAKEDATE, MAKEUSER, to_char(MODIFYDATE,'yyyy-mm-dd hh24:mi:ss') MODIFYDATE, MODIFYUSER
   </sql>
   <select id="selectByPrimaryKey" parameterType="java.lang.String" resultMap="BaseResultMap">
     select 
@@ -30,14 +31,26 @@
     where USERCODE = #{usercode,jdbcType=VARCHAR}
   </select>
 
-  <select id="selectUsers"  resultMap="BaseResultMap">
+  <select id="selectUsers" parameterType="com.donbala.userManagement.model.CmsUser"  resultMap="BaseResultMap">
     select
-    <include refid="Base_Column_List" />
+      USERCODE, EMAIL, MOBILE, PASSWORD, NAME, decode(GENDOR,'0','男','1','女') GENDOR, BRANCH, DEPARTMENT, STATE, ADMINFLAG,
+      to_char(PSWEXPIREDATE,'yyyy-mm-dd hh24:mi:ss') PSWEXPIREDATE, to_char(LASTLOGINDATE,'yyyy-mm-dd hh24:mi:ss') LASTLOGINDATE,
+      to_char(MAKEDATE,'yyyy-mm-dd hh24:mi:ss') MAKEDATE, MAKEUSER, to_char(MODIFYDATE,'yyyy-mm-dd hh24:mi:ss') MODIFYDATE, MODIFYUSER
     from cms_user
     where 1=1
     <if test="usercode != null and usercode != ''">
-    and (USERCODE = #{usercode} or EMAIL=#{usercode} or MOBILE=#{usercode} or NAME=#{usercode})
+    and USERCODE = #{usercode}
     </if>
+    <if test="gendor != null and gendor != ''">
+      and GENDOR = #{gendor}
+    </if>
+    <if test="mobile != null and mobile != ''">
+      and MOBILE=#{mobile}
+    </if>
+    <if test="usercode != null and usercode != ''">
+      and EMAIL=#{email}
+    </if>
+
   </select>
 
   <select id="selectByUsercodeAndPsw" parameterType="java.lang.String" resultType="com.donbala.userManagement.model.CmsUser">
